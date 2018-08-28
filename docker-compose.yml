@@ -1,0 +1,26 @@
+version: '3'
+services:
+
+  cloyster:
+    container_name: cloyster
+    image: cloyster
+    build:
+      context: .
+    networks:
+      - cloyster
+      - caddywork
+    volumes:
+      - ./webs/:/app/webs
+
+  redis:
+    container_name: redis
+    image: redis
+    volumes:
+      - ./db:/data
+    networks:
+      - cloyster
+    command: redis-server --appendonly yes
+
+networks:
+  cloyster:
+    driver: bridge

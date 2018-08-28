@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Upload your secret webpage</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.css"/>
+</head>
+
+<body class="container is-fluid">
+    <h1 class="title hero hero-body is-medium is-primary is-bold">Upload your secret webpage</h1>
+    <form class="column is-one-third is-offset-one-third" method="POST" enctype="multipart/form-data" action="/">
+        <div class="field">
+            <label class="label" for="web_name">The name for your webpage</label>
+            <div class="control">
+                <input class="input" type="text" name="web_name" placeholder="Something short" autofocus>
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label" for="web_zip">A zip file with your packed webpage (index.html is your entrypoint)</label>
+            <div class="file is-boxed">
+                <label class="file-label">
+                    <input class="file-input" type="file" name="web_zip" id="web_zip">
+                    <span class="file-cta">
+                        <span class="icon">
+                            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                                <path fill="#000000" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M13.5,16V19H10.5V16H8L12,12L16,16H13.5M13,9V3.5L18.5,9H13Z"/>
+                            </svg>
+                        </span>
+                        <span class="file-label">
+                            Choose a file…
+                        </span>
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label" for="password">The password to access your webpage</label>
+            <div class="control"></div>
+            <input class="input" type="text" name="password" placeholder="Your secret password">
+        </div>
+        </div>
+
+        <button class="button is-primary" type="submit">Upload</button>
+    </form>
+</body>
+
+</html>
