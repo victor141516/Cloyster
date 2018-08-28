@@ -6,6 +6,7 @@ from config import (
 )
 from flask import Flask, request, redirect, make_response, abort
 import hashlib
+from io import BytesIO
 import logging
 import os
 from redpie import Redpie
@@ -30,8 +31,10 @@ def unzip_to_webs_and_check(f, name):
     if os.path.isdir(dest_dir):
         return False
 
+    buffer = BytesIO()
+    buffer.write(f.stream.read())
     try:
-        zf = zipfile.ZipFile(f)
+        zf = zipfile.ZipFile(buffer)
     except zipfile.BadZipFile:
         return False
 
@@ -92,29 +95,17 @@ def ser_cookie():
 @app.route('/<web_name>/', defaults={'subpath': ''})
 @app.route('/<web_name>/<path:subpath>')
 def give_web(web_name, subpath):
-    print(" -- 'p' in request.cookies =", 'p' in request.cookies)
-    print(" -- " + web_name + " in db =", web_name in db)
-    if web_name in db:
-        print(" -- " + request.cookies['p'] + " == " + db[web_name] + " =", request.cookies['p'] == db[web_name])
-
     if 'p' in request.cookies and web_name in db and request.cookies['p'] == db[web_name]:
-        print(" -- Auth ok")
         if os.path.isfile(WEBS_DIR + '/' + web_name + '/' + subpath):
-            print(" -- Is file")
             return app.send_static_file(web_name + '/' + subpath)
         elif os.path.isdir(WEBS_DIR + '/' + web_name + '/' + subpath):
-            print(" -- Is dir")
             if os.path.isfile(WEBS_DIR + '/' + web_name + '/' + subpath + '/index.html'):
-                print(" -- index.html in dir")
                 return app.send_static_file(web_name + '/' + subpath + '/index.html')
             else:
-                print(" -- index.html NOT in dir")
                 return abort(404)
         else:
-            print(" -- Path doesnt exists")
             return abort(404)
     else:
-        print(" -- Auth miss")
         response = make_response(request_password_html)
         return response
 
