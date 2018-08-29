@@ -5,7 +5,8 @@ from config import (
     WEBS_DIR,
     KLOYSTER_SALT
 )
-from flask import Flask, request, redirect, make_response, abort
+from flask import Flask, request, redirect, make_response, abort, jsonify
+from functools import wraps
 import hashlib
 from io import BytesIO
 import logging
@@ -25,6 +26,16 @@ with open('static/upload.html', 'r') as f:
 
 with open('static/request_password.html', 'r') as f:
     request_password_html = f.read()
+
+
+def admin(f):
+    @wraps(f)
+    def w(*args, **kwargs):
+        if 'p' in request.cookies and 'admin' in db and request.cookies['p'] == db['admin']:
+            return f(*args, **kwargs)
+        else:
+            return abort(401)
+    return w
 
 
 def unzip_to_webs_and_check(f, name):
@@ -84,6 +95,7 @@ def upload_web_post():
     db[web_name] = encode_p(password)
     return redirect('/' + web_name)
 
+
 @app.route('/setp', methods=['POST'])
 def ser_cookie():
     response = redirect(request.form['path'])
@@ -96,7 +108,9 @@ def ser_cookie():
 @app.route('/<web_name>/', defaults={'subpath': ''})
 @app.route('/<web_name>/<path:subpath>')
 def give_web(web_name, subpath):
-    if 'p' in request.cookies and web_name in db and request.cookies['p'] == db[web_name]:
+    if 'p' in request.cookies \
+        and web_name in db \
+        and (request.cookies['p'] == db[web_name] or request.cookies['p'] == db['admin']):
         if os.path.isfile(WEBS_DIR + '/' + web_name + '/' + subpath):
             return app.send_static_file(web_name + '/' + subpath)
         elif os.path.isdir(WEBS_DIR + '/' + web_name + '/' + subpath):
@@ -109,6 +123,31 @@ def give_web(web_name, subpath):
     else:
         response = make_response(request_password_html)
         return response
+
+
+@app.route('/api/web/list', methods=['GET'])
+@admin
+def list_webs():
+    return jsonify(list(db))
+
+
+@app.route('/api/web/<web>', methods=['GET', 'DELETE', 'PATCH'])
+@admin
+def get_web_size(web):
+    if request.method == 'GET':
+        return jsonify({'size': str(os.stat(WEBS_DIR + '/' + web).st_size)})
+    elif request.method == 'DELETE':
+        if web in db:
+            del(db[web])
+        if os.path.exists(WEBS_DIR + '/' + web):
+            rmtree(WEBS_DIR + '/' + web)
+        return jsonify({'result': 'ok'})
+    elif request.method == 'PATCH':
+        password = request.json.get('password')
+        if password:
+            db[web] = encode_p(password)
+            return jsonify({'result': 'ok'})
+        return jsonify({'result': 'fail'})
 
 
 if __name__ == "__main__":

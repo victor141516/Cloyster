@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Kloyster Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.css" />
+    <script lang="text/javascript">
+        (function () {
+            (async () => {
+                const rawResponse = await fetch('/api/web/list', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+                const webs = await rawResponse.json();
+                const templateRow = document.getElementById('row').cloneNode(true);
+                templateRow.hidden = false;
+                webs.forEach(web => {
+                    const row = templateRow.cloneNode(true);
+                    row.id = web;
+                    row.querySelector('.name').innerText = web;
+                    row.querySelector('.size').onclick = async () => {
+                        const rawResponse = await fetch('/api/web/' + web, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                            }
+                        });
+                        const webData = await rawResponse.json();
+                        row.querySelector('.size').parentElement.innerHTML = (webData.size/1000) + ' KB';
+                    };
+                    row.querySelector('.remove').onclick = async () => {
+                        const rawResponse = await fetch('/api/web/' + web, {
+                            method: 'DELETE',
+                            headers: {
+                                'Accept': 'application/json',
+                            }
+                        });
+                        const webData = await rawResponse.json();
+                        if (webData.result == 'ok') {
+                            row.remove();
+                        }
+                    };
+                    row.querySelector('.change-password').onclick = async () => {
+                        const newPassword = document.getElementById(web).querySelector('input').value;
+                        if (!newPassword) {
+                            return;
+                        }
+                        const rawResponse = await fetch('/api/web/' + web, {
+                            method: 'PATCH',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({password: newPassword})
+                        });
+                        const webData = await rawResponse.json();
+                        if (webData.result == 'ok') {
+                            document.getElementById(web).querySelector('input').value = '';
+                        }
+                    };
+                    document.getElementById('row').parentElement.appendChild(row);
+                });
+            })();
+        })();
+    </script>
+</head>
+
+<body>
+    <h1 class="title hero hero-body is-medium is-primary is-bold">Admin</h1>
+    <div class="column is-one-third is-offset-one-third table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Size</th>
+                    <th>Remove</th>
+                    <th>Password</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="row" hidden="hidden">
+                    <th class="name">name</th>
+                    <td><button class="size button is-small">Show</button></td>
+                    <td><button class="remove button is-small is-danger">Remove</button></td>
+                    <td class="field has-addons">
+                        <div class="control">
+                            <input type="text" class="input is-small" placeholder="New password">
+                        </div>
+                        <div class="control">
+                            <button class="change-password button is-small">Set</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>
