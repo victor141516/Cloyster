@@ -38,6 +38,18 @@ def admin(f):
     return w
 
 
+def get_size(path):
+    total_size = 0
+    if os.path.isdir(path):
+        for dirpath, dirnames, filenames in os.walk(path):
+            for fName in filenames:
+                fp = os.path.join(dirpath, fName)
+                total_size += os.path.getsize(fp)
+        return total_size
+    else:
+        return os.path.getsize(path)
+
+
 def unzip_to_webs_and_check(f, name):
     dest_dir = WEBS_DIR + '/' + name
     if os.path.isdir(dest_dir):
@@ -135,7 +147,7 @@ def list_webs():
 @admin
 def get_web_size(web):
     if request.method == 'GET':
-        return jsonify({'size': str(os.stat(WEBS_DIR + '/' + web).st_size)})
+        return jsonify({'size': str(get_size(WEBS_DIR + '/' + web))})
     elif request.method == 'DELETE':
         if web in db:
             del(db[web])
