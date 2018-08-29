@@ -17,8 +17,11 @@ from slugify import slugify
 import zipfile
 
 
-app = Flask('Cloyster', static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), WEBS_DIR))
+app = Flask('Kloyster', static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), WEBS_DIR))
 db = Redpie(REDIS_DB, REDIS_HOST, REDIS_PORT)
+if 'admin' not in db:
+    db['admin'] = encode_p('admin')
+
 LOGGER = logging.getLogger()
 
 with open('static/upload.html', 'r') as f:
