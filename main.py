@@ -2,7 +2,8 @@ from config import (
     REDIS_HOST,
     REDIS_PORT,
     REDIS_DB,
-    WEBS_DIR
+    WEBS_DIR,
+    KLOYSTER_SALT
 )
 from flask import Flask, request, redirect, make_response, abort
 import hashlib
@@ -52,7 +53,7 @@ def unzip_to_webs_and_check(f, name):
 
 
 def encode_p(p):
-    return hashlib.sha256(p.encode('utf-8')).hexdigest()
+    return hashlib.sha256((p + KLOYSTER_SALT).encode('utf-8')).hexdigest()
 
 
 @app.route('/', methods=['GET'])
