@@ -123,9 +123,15 @@ def ser_cookie():
 @app.route('/<web_name>/', defaults={'subpath': ''})
 @app.route('/<web_name>/<path:subpath>')
 def give_web(web_name, subpath):
-    if 'p' in request.cookies \
-        and web_name in db \
-        and (request.cookies['p'] == db[web_name] or request.cookies['p'] == db['admin']):
+    if (
+        db[web_name] == encode_p('') or (
+            'p' in request.cookies and
+            web_name in db and (
+                request.cookies['p'] == db[web_name] or
+                request.cookies['p'] == db['admin']
+            )
+        )
+    ):
         if os.path.isfile(WEBS_DIR + '/' + web_name + '/' + subpath):
             return app.send_static_file(web_name + '/' + subpath)
         elif os.path.isdir(WEBS_DIR + '/' + web_name + '/' + subpath):
